@@ -1,0 +1,44 @@
+{
+  "name": "@truthlocks/maip",
+  "version": "0.1.0",
+  "description": "JavaScript/TypeScript SDK for the MAIP (Machine Agent Identity Protocol)",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "maip",
+    "agent-identity",
+    "trust",
+    "delegation",
+    "orchestration",
+    "ai-agents"
+  ],
+  "author": "Truthlocks Inc.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/truthlocks/maip.git",
+    "directory": "sdk/js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

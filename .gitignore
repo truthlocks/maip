@@ -1,0 +1,10 @@
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+node_modules/
+dist/
+__pycache__/
+*.egg-info/
+.env
