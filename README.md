@@ -55,7 +55,7 @@ This repository includes a portable Go reference implementation of the MAIP prot
 | `trust.go` | Trust score computation (0.0-1.0 scale with weighted factors) |
 | `delegation.go` | Cross-tenant delegation, depth limiting (max 3), scope intersection |
 | `bundle.go` | Proof bundle creation and offline verification |
-| `witness.go` | Witness request, attestation, consensus computation |
+| `witness.go` | Witness requests, attestation, consensus computation |
 
 ### Quick Start (Go Library)
 
