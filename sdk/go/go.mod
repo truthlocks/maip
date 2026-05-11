@@ -1,3 +1,3 @@
-module github.com/truthlocks/maip/sdk/go
+module github.com/truthlocks/truthlock/packages/sdk-go
 
 go 1.22

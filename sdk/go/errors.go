@@ -1,92 +1,67 @@
-// Copyright 2026 Truthlocks Inc.
-// Licensed under the Apache License, Version 2.0
-
-package maip
+package truthlock
 
 import "fmt"
 
-// MaipError is the base error type for all MAIP SDK errors.
-type MaipError struct {
-	Message    string
-	StatusCode int
-	Code       string
+// ErrorCode represents stable error codes returned by the API.
+type ErrorCode string
+
+const (
+	ErrInvalidInput     ErrorCode = "INVALID_INPUT"
+	ErrNotFound         ErrorCode = "NOT_FOUND"
+	ErrUnauthorized     ErrorCode = "UNAUTHORIZED"
+	ErrForbidden        ErrorCode = "FORBIDDEN"
+	ErrConflict         ErrorCode = "CONFLICT"
+	ErrInternalError    ErrorCode = "INTERNAL_ERROR"
+	ErrIssuerNotTrusted ErrorCode = "ISSUER_NOT_TRUSTED"
+	ErrIssuerSuspended  ErrorCode = "ISSUER_SUSPENDED"
+	ErrIssuerRevoked    ErrorCode = "ISSUER_REVOKED"
+	ErrKeyNotFound      ErrorCode = "KEY_NOT_FOUND"
+	ErrKeyInactive      ErrorCode = "KEY_INACTIVE"
+	ErrKeyExpired       ErrorCode = "KEY_EXPIRED"
+	ErrKeyCompromised   ErrorCode = "KEY_COMPROMISED"
+	ErrPolicyViolation  ErrorCode = "POLICY_VIOLATION"
+)
+
+// TruthlockError represents an error from the Truthlock API.
+type TruthlockError struct {
+	// Code is the stable error code for programmatic handling.
+	Code ErrorCode `json:"code"`
+	// Message is a human-readable error message.
+	Message string `json:"message"`
+	// Status is the HTTP status code.
+	Status int `json:"status"`
+	// TraceID is for debugging and support.
+	TraceID string `json:"trace_id,omitempty"`
+	// Details contains additional error context.
+	Details map[string]interface{} `json:"details,omitempty"`
 }
 
-func (e *MaipError) Error() string {
-	if e.StatusCode > 0 {
-		return fmt.Sprintf("maip: %s (HTTP %d, code=%s)", e.Message, e.StatusCode, e.Code)
-	}
-	return fmt.Sprintf("maip: %s", e.Message)
+// Error implements the error interface.
+func (e *TruthlockError) Error() string {
+	return fmt.Sprintf("[%s] %s (status=%d)", e.Code, e.Message, e.Status)
 }
 
-// LimitExceededError is returned when the caller exceeds a rate limit or quota.
-type LimitExceededError struct {
-	MaipError
-	RetryAfterSeconds int
+// Unwrap returns nil since TruthlockError is the root error type.
+func (e *TruthlockError) Unwrap() error {
+	return nil
 }
 
-// NewLimitExceededError creates a new LimitExceededError.
-func NewLimitExceededError(message string, retryAfterSeconds int) *LimitExceededError {
-	return &LimitExceededError{
-		MaipError: MaipError{
-			Message:    message,
-			StatusCode: 429,
-			Code:       "LIMIT_EXCEEDED",
-		},
-		RetryAfterSeconds: retryAfterSeconds,
-	}
+// IsCode checks if the error has the given code.
+func (e *TruthlockError) IsCode(code ErrorCode) bool {
+	return e.Code == code
 }
 
-// UnauthorizedError is returned when the API key is missing, invalid, or lacks permission.
-type UnauthorizedError struct {
-	MaipError
+// NotFoundError returns true if this is a not found error.
+func (e *TruthlockError) NotFoundError() bool {
+	return e.Code == ErrNotFound || e.Status == 404
 }
 
-// NewUnauthorizedError creates a new UnauthorizedError.
-func NewUnauthorizedError(message string) *UnauthorizedError {
-	if message == "" {
-		message = "Unauthorized: invalid or missing API key"
-	}
-	return &UnauthorizedError{
-		MaipError: MaipError{
-			Message:    message,
-			StatusCode: 401,
-			Code:       "UNAUTHORIZED",
-		},
-	}
+// AuthorizationError returns true if this is an auth error.
+func (e *TruthlockError) AuthorizationError() bool {
+	return e.Code == ErrUnauthorized || e.Code == ErrForbidden
 }
 
-// NotFoundError is returned when a requested resource is not found.
-type NotFoundError struct {
-	MaipError
-	Resource   string
-	Identifier string
-}
-
-// NewNotFoundError creates a new NotFoundError.
-func NewNotFoundError(resource, identifier string) *NotFoundError {
-	return &NotFoundError{
-		MaipError: MaipError{
-			Message:    fmt.Sprintf("%s not found: %s", resource, identifier),
-			StatusCode: 404,
-			Code:       "NOT_FOUND",
-		},
-		Resource:   resource,
-		Identifier: identifier,
-	}
-}
-
-// VerificationError is returned when bundle or receipt verification fails.
-type VerificationError struct {
-	MaipError
-}
-
-// NewVerificationError creates a new VerificationError.
-func NewVerificationError(message string) *VerificationError {
-	return &VerificationError{
-		MaipError: MaipError{
-			Message: message,
-			Code:    "VERIFICATION_FAILED",
-		},
-	}
+// ValidationError returns true if this is a validation error.
+func (e *TruthlockError) ValidationError() bool {
+	return e.Code == ErrInvalidInput || e.Status == 400
 }

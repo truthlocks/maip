@@ -1,44 +1,60 @@
 {
-  "name": "@truthlocks/maip",
-  "version": "1.0.0",
-  "description": "JavaScript/TypeScript SDK for the MAIP (Machine Agent Identity Protocol)",
-  "type": "module",
+  "name": "@truthlock/sdk",
+  "version": "1.2.3",
+  "description": "Official Truthlock JavaScript/TypeScript SDK",
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
   "files": [
     "dist",
+    "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc",
-    "clean": "rm -rf dist",
-    "prepublishOnly": "npm run build"
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
-    "maip",
-    "agent-identity",
-    "trust",
-    "delegation",
-    "orchestration",
-    "ai-agents"
+    "truthlock",
+    "attestation",
+    "verification",
+    "sdk"
   ],
-  "author": "Truthlocks Inc.",
-  "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/truthlocks/maip.git",
-    "directory": "sdk/js"
+  "author": "Truthlock",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "typescript": ">=4.7.0"
   },
   "engines": {
     "node": ">=18.0.0"
   },
-  "devDependencies": {
-    "typescript": "^5.4.0"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/truthlocks/truthlock.git",
+    "directory": "packages/sdk-js"
+  },
+  "homepage": "https://docs.truthlocks.com/sdk/js",
+  "bugs": {
+    "url": "https://github.com/truthlocks/truthlock/issues"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   }
 }

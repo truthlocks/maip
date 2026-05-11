@@ -1,177 +1,286 @@
-// Copyright 2026 Truthlocks Inc.
-// Licensed under the Apache License, Version 2.0
+/**
+ * Truthlock SDK - Core Client
+ *
+ * The main entry point for interacting with the Truthlock API.
+ *
+ * @example
+ * ```typescript
+ * import { TruthlockClient } from '@truthlock/sdk';
+ *
+ * const client = new TruthlockClient({
+ *   baseUrl: 'https://api.truthlocks.com',
+ *   auth: { type: 'tenant', tenantId: 'your-tenant-id' }
+ * });
+ *
+ * // Create an issuer
+ * const issuer = await client.issuers.create({
+ *   name: 'My Organization',
+ *   legal_name: 'My Organization Inc.',
+ *   display_name: 'My Org'
+ * });
+ * ```
+ */
 
-import type {
-  Agent,
-  CheckGuardrailsRequest,
-  ComputeTrustScoreRequest,
-  CreateAgentRequest,
-  CreateSessionRequest,
-  Delegation,
-  ExecuteOrchestrationRequest,
-  GuardrailResult,
-  ListAgentsOptions,
-  ListResponse,
-  OfferDelegationRequest,
-  Orchestration,
-  Session,
-  TrustScore,
-} from "./types.js";
+import type { TruthlockClientConfig, AuthStrategy } from "./types/models";
 import {
-  LimitExceededError,
-  MaipError,
-  NotFoundError,
-  UnauthorizedError,
-} from "./errors.js";
+  TruthlockError,
+  NetworkError,
+  RetryExhaustedError,
+} from "./types/errors";
+import {
+  generateIdempotencyKey,
+  sleep,
+  calculateBackoff,
+  redactSensitive,
+} from "./utils";
+import { IssuersResource } from "./resources/issuers";
+import { KeysResource } from "./resources/keys";
+import { AttestationsResource } from "./resources/attestations";
+import { VerifyResource } from "./resources/verify";
+import { AuditResource } from "./resources/audit";
+import { ReceiptsResource } from "./resources/receipts";
 
-const DEFAULT_BASE_URL = "https://api.truthlocks.com";
-
-export interface MaipClientOptions {
-  apiKey: string;
-  baseUrl?: string;
-  timeoutMs?: number;
-}
-
-export class MaipClient {
-  private readonly apiKey: string;
+export class TruthlockClient {
   private readonly baseUrl: string;
-  private readonly timeoutMs: number;
+  private readonly auth: AuthStrategy;
+  private readonly autoRetry: boolean;
+  private readonly maxRetries: number;
+  private readonly debug: boolean;
+  private readonly fetchFn: typeof fetch;
 
-  constructor(options: MaipClientOptions) {
-    if (!options.apiKey) {
-      throw new MaipError("apiKey is required");
+  /** Issuer management operations */
+  readonly issuers: IssuersResource;
+  /** Key management operations */
+  readonly keys: KeysResource;
+  /** Attestation operations */
+  readonly attestations: AttestationsResource;
+  /** Verification operations */
+  readonly verify: VerifyResource;
+  /** Audit operations */
+  readonly audit: AuditResource;
+  /** Receipt operations (Ticket 81) */
+  readonly receipts: ReceiptsResource;
+
+  constructor(config: TruthlockClientConfig) {
+    this.baseUrl = config.baseUrl.replace(/\/$/, "");
+    this.auth = config.auth;
+    this.autoRetry = config.autoRetry ?? true;
+    this.maxRetries = config.maxRetries ?? 3;
+    this.debug = config.debug ?? false;
+    this.fetchFn = config.fetch ?? globalThis.fetch;
+
+    // Initialize resource classes
+    this.issuers = new IssuersResource(this);
+    this.keys = new KeysResource(this);
+    this.attestations = new AttestationsResource(this);
+    this.verify = new VerifyResource(this);
+    this.audit = new AuditResource(this);
+    this.receipts = new ReceiptsResource(this);
+  }
+
+  /**
+   * Make an authenticated HTTP request to the Truthlock API.
+   * Handles idempotency, retries, and error mapping automatically.
+   */
+  async request<T>(
+    method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
+    path: string,
+    options?: {
+      body?: unknown;
+      idempotencyKey?: string;
+      query?: Record<string, string | number | undefined>;
+      skipRetry?: boolean;
+      responseType?: "json" | "arraybuffer";
+    },
+  ): Promise<T> {
+    const url = this.buildUrl(path, options?.query);
+    const headers = this.buildHeaders(method, options?.idempotencyKey);
+
+    const requestInit: RequestInit = {
+      method,
+      headers,
+    };
+
+    if (options?.body && method !== "GET") {
+      requestInit.body = JSON.stringify(options.body);
     }
-    this.apiKey = options.apiKey;
-    this.baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
-    this.timeoutMs = options.timeoutMs ?? 30_000;
-  }
 
-  async registerAgent(request: CreateAgentRequest): Promise<Agent> {
-    return this.post<Agent>("/v1/agents", request);
-  }
+    this.log("request", method, url, options?.body);
 
-  async listAgents(options?: ListAgentsOptions): Promise<ListResponse<Agent>> {
-    const params = new URLSearchParams();
-    if (options?.status) params.set("status", options.status);
-    if (options?.offset !== undefined) params.set("offset", String(options.offset));
-    if (options?.limit !== undefined) params.set("limit", String(options.limit));
-    return this.get<ListResponse<Agent>>("/v1/agents", params);
-  }
+    // Determine if this request is safe to retry
+    const isIdempotent = method === "GET" || !!options?.idempotencyKey;
+    const shouldRetry = this.autoRetry && isIdempotent && !options?.skipRetry;
 
-  async getAgent(agentId: string): Promise<Agent> {
-    return this.get<Agent>("/v1/agents/" + encodeURIComponent(agentId));
-  }
+    const responseType = options?.responseType || "json";
 
-  async suspendAgent(agentId: string): Promise<Agent> {
-    return this.post<Agent>("/v1/agents/" + encodeURIComponent(agentId) + "/suspend", {});
-  }
-
-  async revokeAgent(agentId: string): Promise<Agent> {
-    return this.post<Agent>("/v1/agents/" + encodeURIComponent(agentId) + "/revoke", {});
-  }
-
-  async createSession(request: CreateSessionRequest): Promise<Session> {
-    return this.post<Session>("/v1/sessions", request);
-  }
-
-  async terminateSession(sessionId: string): Promise<Session> {
-    return this.post<Session>("/v1/sessions/" + encodeURIComponent(sessionId) + "/terminate", {});
-  }
-
-  async getTrustScore(agentId: string): Promise<TrustScore> {
-    return this.get<TrustScore>("/v1/agents/" + encodeURIComponent(agentId) + "/trust-score");
-  }
-
-  async computeTrustScore(request: ComputeTrustScoreRequest): Promise<TrustScore> {
-    return this.post<TrustScore>("/v1/agents/" + encodeURIComponent(request.agentId) + "/trust-score/compute", request);
-  }
-
-  async offerDelegation(request: OfferDelegationRequest): Promise<Delegation> {
-    return this.post<Delegation>("/v1/delegations", request);
-  }
-
-  async acceptDelegation(delegationId: string): Promise<Delegation> {
-    return this.post<Delegation>("/v1/delegations/" + encodeURIComponent(delegationId) + "/accept", {});
-  }
-
-  async executeOrchestration(request: ExecuteOrchestrationRequest): Promise<Orchestration> {
-    return this.post<Orchestration>("/v1/orchestrations", request);
-  }
-
-  async checkGuardrails(request: CheckGuardrailsRequest): Promise<GuardrailResult> {
-    return this.post<GuardrailResult>("/v1/guardrails/check", request);
-  }
-
-  private async get<T>(path: string, params?: URLSearchParams): Promise<T> {
-    let url = this.baseUrl + path;
-    if (params && params.toString()) {
-      url += "?" + params.toString();
+    if (shouldRetry) {
+      return this.requestWithRetry<T>(
+        url,
+        requestInit,
+        this.maxRetries,
+        responseType,
+      );
     }
-    return this.request<T>("GET", url);
+
+    return this.executeRequest<T>(url, requestInit, responseType);
   }
 
-  private async post<T>(path: string, body: unknown): Promise<T> {
-    return this.request<T>("POST", this.baseUrl + path, body);
+  private async requestWithRetry<T>(
+    url: string,
+    init: RequestInit,
+    maxAttempts: number,
+    responseType: "json" | "arraybuffer" = "json",
+  ): Promise<T> {
+    let lastError: Error | undefined;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        return await this.executeRequest<T>(url, init, responseType);
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+
+        // Don't retry client errors (4xx) except for rate limiting and specific retryable errors
+        if (error instanceof TruthlockError) {
+          const status = error.status ?? 0;
+          if (status >= 400 && status < 500 && status !== 429) {
+            throw error;
+          }
+        }
+
+        if (attempt < maxAttempts - 1) {
+          const delay = calculateBackoff(attempt);
+          this.log(
+            "retry",
+            `Attempt ${attempt + 1} failed, retrying in ${delay}ms`,
+          );
+          await sleep(delay);
+        }
+      }
+    }
+
+    throw new RetryExhaustedError(
+      `Request failed after ${maxAttempts} attempts`,
+      maxAttempts,
+      lastError,
+    );
   }
 
-  private async request<T>(method: string, url: string, body?: unknown): Promise<T> {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+  private async executeRequest<T>(
+    url: string,
+    init: RequestInit,
+    responseType: "json" | "arraybuffer" = "json",
+  ): Promise<T> {
+    let response: Response;
 
     try {
-      const headers: Record<string, string> = {
-        Authorization: "Bearer " + this.apiKey,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "User-Agent": "@truthlocks/maip-sdk/0.1.0",
-      };
-
-      const init: RequestInit = { method, headers, signal: controller.signal };
-
-      if (body !== undefined) {
-        init.body = JSON.stringify(body);
-      }
-
-      const response = await fetch(url, init);
-
-      if (!response.ok) {
-        await this.handleErrorResponse(response);
-      }
-
-      return (await response.json()) as T;
+      response = await this.fetchFn(url, init);
     } catch (error) {
-      if (error instanceof MaipError) throw error;
-      if (error instanceof DOMException && error.name === "AbortError") {
-        throw new MaipError("Request timed out after " + this.timeoutMs + "ms");
-      }
-      throw new MaipError("Request failed: " + (error instanceof Error ? error.message : String(error)));
-    } finally {
-      clearTimeout(timeout);
+      throw new NetworkError(
+        `Network request failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        error instanceof Error ? error : undefined,
+      );
     }
+
+    if (!response.ok) {
+      const text = await response.text();
+      let json: unknown;
+      try {
+        json = text ? JSON.parse(text) : null;
+      } catch {
+        json = null;
+      }
+      this.log("response", response.status, json || text);
+      if (json && typeof json === "object") {
+        throw TruthlockError.fromApiResponse({
+          ...(json as Record<string, unknown>),
+          status: response.status,
+        });
+      }
+      throw new TruthlockError(
+        text || `HTTP ${response.status}`,
+        "HTTP_ERROR",
+        { status: response.status },
+      );
+    }
+
+    if (responseType === "arraybuffer") {
+      this.log("response", response.status, "[binary]");
+      return (await response.arrayBuffer()) as T;
+    }
+
+    const text = await response.text();
+    let json: unknown;
+    try {
+      json = text ? JSON.parse(text) : null;
+    } catch {
+      json = null;
+    }
+    this.log("response", response.status, json || text);
+    return json as T;
   }
 
-  private async handleErrorResponse(response: Response): Promise<never> {
-    let errorBody: { message?: string; code?: string } = {};
-    try {
-      errorBody = (await response.json()) as typeof errorBody;
-    } catch {
-      // Response body may not be JSON
-    }
+  private buildUrl(
+    path: string,
+    query?: Record<string, string | number | undefined>,
+  ): string {
+    const url = new URL(path.startsWith("/") ? path : `/${path}`, this.baseUrl);
 
-    const message = errorBody.message ?? "HTTP " + response.status;
-    const code = errorBody.code;
-
-    switch (response.status) {
-      case 401:
-        throw new UnauthorizedError(message);
-      case 404:
-        throw new NotFoundError("Resource", message);
-      case 429: {
-        const retryAfter = response.headers.get("Retry-After");
-        throw new LimitExceededError(message, retryAfter ? parseInt(retryAfter, 10) : undefined);
+    if (query) {
+      for (const [key, value] of Object.entries(query)) {
+        if (value !== undefined) {
+          url.searchParams.set(key, String(value));
+        }
       }
-      default:
-        throw new MaipError(message, response.status, code);
     }
+
+    return url.toString();
+  }
+
+  private buildHeaders(
+    method: string,
+    idempotencyKey?: string,
+  ): Record<string, string> {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+
+    // Add authentication headers
+    switch (this.auth.type) {
+      case "tenant":
+        headers["X-Tenant-ID"] = this.auth.tenantId;
+        break;
+      case "bearer":
+        headers["Authorization"] = `Bearer ${this.auth.token}`;
+        if (this.auth.tenantId) {
+          headers["X-Tenant-ID"] = this.auth.tenantId;
+        }
+        break;
+      case "service":
+        headers["X-API-Key"] = this.auth.apiKey;
+        if (this.auth.tenantId) {
+          headers["X-Tenant-ID"] = this.auth.tenantId;
+        }
+        break;
+    }
+
+    // Add idempotency key for mutating operations
+    if (method === "POST" || method === "PUT") {
+      headers["Idempotency-Key"] = idempotencyKey || generateIdempotencyKey();
+    }
+
+    return headers;
+  }
+
+  private log(type: string, ...args: unknown[]): void {
+    if (!this.debug) return;
+
+    const redacted = args.map((arg) =>
+      typeof arg === "object" && arg !== null
+        ? redactSensitive(arg as Record<string, unknown>)
+        : arg,
+    );
+
+    console.log(`[Truthlock SDK] ${type}:`, ...redacted);
   }
 }
