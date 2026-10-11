@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "truthlocks-llamaindex"
+version = "1.1.0"
+description = "Truthlocks MAIP integration for LlamaIndex — auto-generate cryptographic receipts for every query and retrieval"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.9"
+authors = [{ name = "Truthlocks Inc", email = "support@truthlocks.com" }]
+keywords = ["truthlocks", "maip", "llamaindex", "receipts", "machine-identity", "ai-provenance"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Security :: Cryptography",
+]
+dependencies = ["maip-ai-connectors[llamaindex]>=1.1.0,<2"]
+
+[project.urls]
+Homepage = "https://truthlocks.com"
+Documentation = "https://docs.truthlocks.com/sdk/llamaindex"
+Repository = "https://github.com/truthlocks/maip"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/truthlocks_llamaindex"]

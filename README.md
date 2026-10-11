@@ -1,59 +1,39 @@
-# MAIP - Machine Agent Identity Protocol
+# Truthlocks MAIP integrations
 
-Open standard for AI agent identity, trust, and accountability.
-
-**Status: Merged into the main Truthlocks platform.**
+Create signed evidence for AI operations and data pipelines using registered Truthlocks machine identities.
 
 ## Install
 
-```bash
-# JavaScript/TypeScript
-npm install @truthlocks/sdk
-
-# Python
-pip install truthlock
-
-# Go
-go get github.com/truthlocks/sdk-go
+```sh
+python -m pip install maip-ai-connectors
+# Add the integration used by your application:
+python -m pip install truthlocks-langchain
 ```
 
-## Quick Start (Free - No Website Needed)
+Create a workspace at [Truthlocks Console](https://console.truthlocks.com), register an agent, and configure `MAIP_API_KEY` and `MAIP_AGENT_ID`. Provider credentials are separate. Read each integration's README for a complete local example, hosted submission, verification and delivery behavior.
 
-```bash
-# Register from CLI
-npx @truthlocks/protect register --email dev@example.com
+## Integration source and guides
 
-# Or from Python
-pip install truthlock
-python -c "import asyncio; from truthlock import TruthlockClient; asyncio.run(TruthlockClient.register('dev@example.com'))"
-```
+- [maip-ai-connectors](integrations/maip-ai-connectors/README.md)
+- [dvc-maip](integrations/dvc-maip/README.md)
+- [mlflow-maip](integrations/mlflow-maip/README.md)
+- [delta-lake-maip](integrations/delta-lake-maip/README.md)
+- [truthlocks-anthropic](integrations/truthlocks-anthropic/README.md)
+- [truthlocks-autogen](integrations/truthlocks-autogen/README.md)
+- [truthlocks-bedrock](integrations/truthlocks-bedrock/README.md)
+- [truthlocks-crewai](integrations/truthlocks-crewai/README.md)
+- [truthlocks-langchain](integrations/truthlocks-langchain/README.md)
+- [truthlocks-llamaindex](integrations/truthlocks-llamaindex/README.md)
+- [truthlocks-openai](integrations/truthlocks-openai/README.md)
 
-## What is MAIP?
+## Receipt guarantees
 
-MAIP gives every AI agent a cryptographic identity with:
-- **Kill switches** - Emergency revocation of rogue agents
-- **Trust scores** - Real-time behavioral trust computation
-- **Action receipts** - Tamper-proof audit trail of every AI operation
-- **Delegation chains** - Verifiable authority transfer between agents
-- **Guardrails** - Policy enforcement before agent actions execute
+Version 1.1.0 clients use `/v1/agent-receipts` and verify server signatures through `/v1/agent-receipts/verify/{receiptID}`. Signed metadata, server receipt IDs and local payload hashes are distinct. Verification includes lifecycle checks but does not establish transparency-log inclusion. Await asynchronous delivery before shutdown; writes are not automatically replayed.
 
-## 10 Signing Algorithms
+The `reference`, `spec`, `sdk` and `verifier` directories contain the earlier protocol/reference implementation. They are not the hosted API contract for these integrations. Use the integration guides and [current API documentation](https://docs.truthlocks.com) for hosted requests.
 
-Ed25519, ES256, ES384, ES512, RS256, RS384, RS512, PS256, PS384, PS512
+## Development
 
-## Documentation
+Install a package's `dev` extras and run its tests from that package directory. HTTP fixtures cover failure handling; recorded release checks distinguish live receipt API tests from local framework/provider simulations. Never commit credentials or customer records.
 
-- [MAIP Guide](https://docs.truthlocks.com/guides/machine-identity)
-- [Agent Authorization](https://docs.truthlocks.com/guides/agent-authorization)
-- [API Reference](https://docs.truthlocks.com/api-reference/machine-identity/agents/register)
-- [Kill Switch](https://docs.truthlocks.com/api-reference/machine-identity/killswitch/kill)
-
-## Specification
-
-- [v1.0.0 Release](https://github.com/truthlocks/maip/releases/tag/v1.0.0)
-- [Trust Model](https://docs.truthlocks.com/guides/trust-scores)
-- [Delegation Chains](https://docs.truthlocks.com/guides/cross-tenant-delegation)
-
-## License
-
-Apache 2.0
+Apache-2.0; see [LICENSE](LICENSE).
