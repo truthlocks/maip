@@ -1,6 +1,6 @@
 # Verify an agent receipt, then deliberately break it
 
-Run a real Ed25519 signature check and see tampering fail. No signup, API key, dependency install, or network request is required after cloning. Requires Node.js 18 or newer.
+Run a real Ed25519 signature check and see tampering fail. Choose Node.js or Python. The Node path requires Node.js 18+ and no dependency install; Python setup is below. Neither example needs a Truthlocks account or API key, and neither makes network requests when run.
 
 ```sh
 git clone https://github.com/truthlocks/maip.git
@@ -8,7 +8,27 @@ cd maip
 node examples/developer-validation/verify.mjs
 ```
 
-Expected: five `PASS` lines, a fixture hash, and an explicit scope statement. A failed assertion exits nonzero. Read the 30-line verifier before running it.
+Expected: five `PASS` lines, a fixture hash, and an explicit scope statement. A failed assertion exits nonzero. Read the verifier before running it.
+
+## Run with Python instead
+
+Prefer Python? Run the same signed fixture and five checks using `cryptography`.
+Python requires one dependency; the Node example above remains dependency-free.
+After cloning the repository, use a virtual environment:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r examples/developer-validation/requirements.txt
+.venv/bin/python examples/developer-validation/verify.py
+```
+
+On Windows PowerShell, use `py -m venv .venv`, then replace `.venv/bin/python`
+with `.venv\Scripts\python.exe` in the remaining commands. Installation needs
+network access; running the example does not. It sends no data to Truthlocks.
+Expect the same five PASS lines. The script verifies the original signed bytes;
+it does not serialize the displayed JSON and assume the result is canonical.
+The bundled key is trusted only for this synthetic fixture. This is not the
+Truthlocks Python SDK or a production verifier; the trust limitations below apply.
 
 ## What you are verifying
 

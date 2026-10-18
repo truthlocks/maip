@@ -1,0 +1,2 @@
+# Tested dependency for this standalone synthetic example.
+cryptography==50.0.2
