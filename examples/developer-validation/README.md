@@ -30,7 +30,7 @@ Offline verification cannot establish current revocation status, business identi
 2. In Console, keep the workspace in sandbox and register your own agent. Use [agent registration documentation](https://docs.truthlocks.com/api-reference/machine-identity/agents/register) for the current request body and required scopes.
 3. Use [receipt creation](https://docs.truthlocks.com/api-reference/agent-receipts/create) to record a clearly labelled test action for your agent. Follow the documented key setup; registration alone is not a claim that signing is ready.
 4. [Verify the receipt](https://docs.truthlocks.com/api-reference/agent-receipts/verify). Inspect signature and transparency results separately. Use `https://sandbox-api.truthlocks.com/v1` with sandbox credentials; never mix production keys or customer records into the trial.
-5. Share your runtime version, passed/failed step and sanitized error in a repository issue. Never publish tokens, passwords, private keys, private receipts or identity documents.
+5. [Report your trial](https://github.com/truthlocks/maip/issues/new?template=developer-trial.yml) with your runtime version, passed/failed step and sanitized error. Never publish tokens, passwords, private keys, private receipts or identity documents.
 
 Optional website attribution is consent-based. This offline script collects no telemetry. Running it counts as a local trial, not a hosted product activation. A hosted activation means a real external developer created their own agent and successfully created and verified a receipt, supported by consented evidence.
 

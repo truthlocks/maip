@@ -1,0 +1,37 @@
+name: Developer trial feedback
+description: Tell us where the offline example or hosted sandbox succeeded or failed.
+title: "[Trial] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for trying MAIP. Share only information you want public. Never include API keys, passwords, private keys, private receipts, identity documents, or customer data. Report vulnerabilities privately to security@truthlocks.com.
+        Offline verification and hosted activation are different; reporting a problem is just as useful as a successful run.
+  - type: dropdown
+    id: path
+    attributes:
+      label: What did you try?
+      options:
+        - Offline receipt verification example
+        - Hosted sandbox agent registration
+        - Hosted sandbox receipt creation and verification
+        - SDK or integration
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Runtime and version
+      description: Node/Python/Go version, SDK version or example commit, and operating system.
+  - type: textarea
+    id: result
+    attributes:
+      label: What happened?
+      description: Which step passed or failed? Paste only sanitized output and reproduction steps.
+    validations:
+      required: true
+  - type: textarea
+    id: friction
+    attributes:
+      label: What would make this easier?
+      description: Optional — unclear instructions, missing example, or approximate time to the first useful result.
