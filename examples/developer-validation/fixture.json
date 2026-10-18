@@ -1,0 +1,37 @@
+{
+  "description": "Synthetic fixture generated and verified with Truthlocks receipt/v2 production signing code. No hosted record or log inclusion is implied.",
+  "payload_b64url": "eyJhY3Rpb24iOiJzdW1tYXJpemUiLCJhZ2VudF9pZCI6Im1haXA6c3ludGhldGljOnB1YmxpYy1kZW1vIiwiYWxnb3JpdGhtIjoiRWQyNTUxOSIsImF1ZGllbmNlIjpudWxsLCJjb250ZXh0IjoidHJ1dGhsb2Nrcy5tYWlwLnJlY2VpcHQvdjIiLCJjcmVhdGVkX2F0IjoiMjAyNi0xMC0xOFQwMDowMDowMFoiLCJkZWxlZ2F0aW9uX2NoYWluX2hhc2giOm51bGwsImV4cGlyZXNfYXQiOm51bGwsImlkIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAxIiwiaW5wdXRzX2hhc2giOm51bGwsImlzc3Vlcl9pZCI6InN5bnRoZXRpYy1pc3N1ZXIiLCJrZXlfaWQiOiJzeW50aGV0aWMtcHVibGljLWRlbW8ta2V5IiwibWV0YWRhdGEiOnsic3ludGhldGljIjp0cnVlfSwibm9uY2UiOm51bGwsIm91dHB1dHNfaGFzaCI6bnVsbCwicHJldmlvdXNfcmVjZWlwdF9pZCI6bnVsbCwicHVycG9zZSI6IlB1YmxpYyBvZmZsaW5lIHZlcmlmaWNhdGlvbiBleGFtcGxlIiwicmVjZWlwdF9pZCI6Im1haXAtcmVjZWlwdDpzeW50aGV0aWMtcHVibGljLWRlbW8iLCJyZWNlaXB0X3R5cGUiOiJhY3Rpb24iLCJyZXNvdXJjZSI6InN5bnRoZXRpYzpwdWJsaWMtZGVtbyIsInNjb3BlcyI6WyJkZW1vOnJlYWQiXSwic3ViamVjdF9pZCI6bnVsbCwidGVuYW50X2lkIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAyIiwidHRsX3NlY29uZHMiOm51bGwsInZlcnNpb24iOiIyLjAifQ",
+  "signature_b64url": "ULrcsBiv8sEM0LTNwFF54-ZIkp_KczrOZSi69F0ssysGMgfdOpuBygQXLgjis4iI04vFJiwMmfG864wUrflLBg",
+  "signed_payload": {
+    "action": "summarize",
+    "agent_id": "maip:synthetic:public-demo",
+    "algorithm": "Ed25519",
+    "audience": null,
+    "context": "truthlocks.maip.receipt/v2",
+    "created_at": "2026-10-18T00:00:00Z",
+    "delegation_chain_hash": null,
+    "expires_at": null,
+    "id": "00000000-0000-4000-8000-000000000001",
+    "inputs_hash": null,
+    "issuer_id": "synthetic-issuer",
+    "key_id": "synthetic-public-demo-key",
+    "metadata": {
+      "synthetic": true
+    },
+    "nonce": null,
+    "outputs_hash": null,
+    "previous_receipt_id": null,
+    "purpose": "Public offline verification example",
+    "receipt_id": "maip-receipt:synthetic-public-demo",
+    "receipt_type": "action",
+    "resource": "synthetic:public-demo",
+    "scopes": [
+      "demo:read"
+    ],
+    "subject_id": null,
+    "tenant_id": "00000000-0000-4000-8000-000000000002",
+    "ttl_seconds": null,
+    "version": "2.0"
+  },
+  "trusted_public_key_spki_b64": "MCowBQYDK2VwAyEA5m/eAqV0636a8km0QUfnZVwObahdDUurhuo03qNN6QI="
+}

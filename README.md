@@ -2,6 +2,12 @@
 
 Create signed evidence for AI operations and data pipelines using registered Truthlocks machine identities.
 
+## Try a signed receipt without an account
+
+[Run the reproducible receipt walkthrough](examples/developer-validation/README.md): verify a signature, deliberately alter the action, corrupt the signature and substitute a key. Uses Node.js built-ins and synthetic public data in the current hosted receipt/v2 signing format. No credentials, signup or telemetry. This does not establish hosted lifecycle checks or transparency inclusion.
+
+We welcome external developer trials and sanitized bug reports. See the walkthrough for a separate hosted sandbox path and its limits.
+
 ## Install
 
 ```sh
