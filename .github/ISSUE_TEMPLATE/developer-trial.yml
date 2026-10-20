@@ -1,37 +1,69 @@
 name: Developer trial feedback
-description: Tell us where the offline example or hosted sandbox succeeded or failed.
-title: "[Trial] "
+description: Report an attempted walkthrough or sandbox integration, including failures.
+title: "[Trial feedback] "
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for trying MAIP. Share only information you want public. Never include API keys, passwords, private keys, private receipts, identity documents, or customer data. Report vulnerabilities privately to security@truthlocks.com.
-        Offline verification and hosted activation are different; reporting a problem is just as useful as a successful run.
+        Thank you for trying the example. A failed or confusing attempt is useful feedback.
+        This is a **public** issue. Do not include API keys, account emails, identity documents,
+        private receipt payloads, or customer data. Participation is voluntary; no endorsement is required.
+        Start here: https://github.com/truthlocks/maip/tree/v2.1.0/examples/developer-validation
   - type: dropdown
     id: path
     attributes:
-      label: What did you try?
+      label: Which path did you try?
       options:
-        - Offline receipt verification example
-        - Hosted sandbox agent registration
-        - Hosted sandbox receipt creation and verification
-        - SDK or integration
+        - Offline Node example
+        - Offline Python example
+        - Hosted sandbox integration
+        - MCP or another public integration
     validations:
       required: true
   - type: input
-    id: version
+    id: runtime
     attributes:
-      label: Runtime and version
-      description: Node/Python/Go version, SDK version or example commit, and operating system.
-  - type: textarea
-    id: result
+      label: Runtime and operating system
+      placeholder: "Example: Node 22 on macOS; no machine IDs or account names"
+  - type: dropdown
+    id: outcome
     attributes:
-      label: What happened?
-      description: Which step passed or failed? Paste only sanitized output and reproduction steps.
+      label: Furthest completed step
+      options:
+        - Could not start
+        - Ran an offline example but a check failed
+        - All offline fixture checks passed
+        - Registered a sandbox agent
+        - Created a sandbox receipt
+        - Created and verified a sandbox receipt
+        - Other (explain below)
     validations:
       required: true
   - type: textarea
     id: friction
     attributes:
-      label: What would make this easier?
-      description: Optional — unclear instructions, missing example, or approximate time to the first useful result.
+      label: What happened, and what should be clearer?
+      description: Include the exact confusing step and sanitized error, if any. Do not paste secrets.
+    validations:
+      required: true
+  - type: input
+    id: time
+    attributes:
+      label: Approximate time spent (optional)
+      placeholder: "Example: 8 minutes before the first check passed"
+  - type: dropdown
+    id: context
+    attributes:
+      label: Trial context
+      options:
+        - External developer trying it independently
+        - Truthlocks team or internal QA
+        - Prefer not to say
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        Offline success is not a hosted activation. Self-reported feedback is not independent
+        cryptographic validation or proof of production use. A maintainer may ask a follow-up here;
+        no private contact details are needed.

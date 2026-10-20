@@ -59,3 +59,9 @@ Optional website attribution is consent-based. This offline script collects no t
 We are inviting external developers to try this and report where the instructions or integration fail. Our proposed 14-day targets are 10 genuine external trials and 3 hosted activations; these are targets, not completed results. Participation is voluntary. No payment or identity document is needed for the offline walkthrough.
 
 Built and reviewed with AI assistance by Truthlocks. Please scrutinize the implementation and trust assumptions, not just the PASS output.
+
+## Tell us what happened
+
+[Report a trial or confusing step](https://github.com/truthlocks/maip/issues/new?template=developer-trial.yml). A failed attempt is useful too. The form separates offline checks from hosted sandbox progress and does not ask for account credentials or customer data. Your report is public and voluntary.
+
+For questions before starting, use the [developer-trial discussion](https://github.com/truthlocks/maip/issues/1). We are looking for real integration feedback, not endorsements.
