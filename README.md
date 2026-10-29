@@ -8,6 +8,12 @@ Create signed evidence for AI operations and data pipelines using registered Tru
 
 We welcome external developer trials and sanitized bug reports. See the walkthrough for a separate hosted sandbox path and its limits.
 
+## Inspect a live public proof
+
+[Open the Truthlocks company statement](https://verify.truthlocks.com/proof/e3812773-923f-4375-be74-7fcde40357ae) in Proof Frame. Run its current verification, then change the separate demonstration copy to see a content-fingerprint mismatch without changing the signed original. The issuer is self-issued: a matching signature is not independent confirmation of corporate authority or the truth of the statement.
+
+[Watch the 43-second product demonstration](https://www.truthlocks.com/launch/proof-frame/demo.mp4), review the [published technical evidence and limitations](https://www.truthlocks.com/resources/evidence), or [create a statement through the hosted workflow](https://www.truthlocks.com/proof-frame). Hosted issuance requires an account and applicable permissions and allowances. The hosted platform is proprietary; this public integration repository retains its own license. Proof Frame statement evidence and MAIP action receipts are distinct record types.
+
 ## Install
 
 ```sh
